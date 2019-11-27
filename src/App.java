@@ -17,7 +17,7 @@ public class App {
         if (ans == '1') {
             double beforeUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             Puzzle p = new Puzzle();
-            p.shuffle(70);
+            p.shuffle(85);
             System.out.println("Shuffled puzzle:");
             p.show();
             List<Puzzle> solution;
