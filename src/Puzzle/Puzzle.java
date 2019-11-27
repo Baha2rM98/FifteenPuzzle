@@ -5,46 +5,55 @@ import Node.Node;
 import java.util.*;
 
 /**
- * Illustrates how to solve the fifteen puzzle using Dijkstra's algorithm and A*.
- * Haven't really written any java in at least 5 years, so apologies for sloppiness.
- *
- * @author leodirac
- */
+ * @author baha2r
+ * Date: 28/Nov/2019 11:03 PM
+ **/
+//TODO => Document
 public class Puzzle {
 
-    public final static int DIMS = 4;
-    private int[][] tiles;
+    private final static int DIMS = 4;
+    private int[][] state;
     private int display_width;
     private Node blank;
 
     public Puzzle() {
-        tiles = new int[DIMS][DIMS];
+        state = new int[DIMS][DIMS];
         int cnt = 1;
         for (int i = 0; i < DIMS; i++) {
             for (int j = 0; j < DIMS; j++) {
-                tiles[i][j] = cnt;
+                state[i][j] = cnt;
                 cnt++;
             }
         }
         display_width = Integer.toString(cnt).length();
-
-        // init blank
         blank = new Node(DIMS - 1, DIMS - 1);
-        tiles[blank.x][blank.y] = 0;
+        state[blank.x][blank.y] = 0;
     }
 
-    public final static Puzzle SOLVED = new Puzzle();
-
-
-    public Puzzle(Puzzle toClone) {
-        this();  // chain to basic init
-        for (Node p : allTilePos()) {
-            tiles[p.x][p.y] = toClone.tile(p);
+    private Puzzle(Puzzle toClone) {
+        this();
+        for (Node p : allCellPos()) {
+            state[p.x][p.y] = toClone.cell(p);
         }
         blank = toClone.getBlank();
     }
 
-    public List<Node> allTilePos() {
+    public void getUserInput() {
+        Scanner scn = new Scanner(System.in);
+        for (int i = 0; i < DIMS; i++) {
+            for (int j = 0; j < DIMS; j++) {
+                state[i][j] = scn.nextInt();
+            }
+        }
+        for (int i = 0; i < DIMS; i++) {
+            for (int j = 0; j < DIMS; j++) {
+                if (state[i][j] < 0 || state[i][j] > 15)
+                    throw new RuntimeException("Wrong input! Try again...");
+            }
+        }
+    }
+
+    private List<Node> allCellPos() {
         ArrayList<Node> out = new ArrayList<Node>();
         for (int i = 0; i < DIMS; i++) {
             for (int j = 0; j < DIMS; j++) {
@@ -55,64 +64,39 @@ public class Puzzle {
     }
 
 
-    public int tile(Node p) {
-        return tiles[p.x][p.y];
+    private int cell(Node p) {
+        return state[p.x][p.y];
     }
 
 
-    public Node getBlank() {
+    private Node getBlank() {
         return blank;
     }
 
 
-    public Node whereIs(int x) {
-        for (Node p : allTilePos()) {
-            if (tile(p) == x) {
+    private Node whereIs(int x) {
+        for (Node p : allCellPos()) {
+            if (cell(p) == x) {
                 return p;
             }
         }
         return null;
     }
 
-
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof Puzzle) {
-            for (Node p : allTilePos()) {
-                if (this.tile(p) != ((Puzzle) o).tile(p)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
-
-    @Override
-    public int hashCode() {
-        int out = 0;
-        for (Node p : allTilePos()) {
-            out = (out * DIMS * DIMS) + this.tile(p);
-        }
-        return out;
-    }
-
-
     public void show() {
         System.out.println("-----------------");
         for (int i = 0; i < DIMS; i++) {
             System.out.print("| ");
             for (int j = 0; j < DIMS; j++) {
-                int n = tiles[i][j];
-                String s;
+                int n = state[i][j];
+                StringBuilder s;
                 if (n > 0) {
-                    s = Integer.toString(n);
+                    s = new StringBuilder(Integer.toString(n));
                 } else {
-                    s = "";
+                    s = new StringBuilder();
                 }
                 while (s.length() < display_width) {
-                    s += " ";
+                    s.append(" ");
                 }
                 System.out.print(s + "| ");
             }
@@ -122,7 +106,7 @@ public class Puzzle {
     }
 
 
-    public List<Node> allValidMoves() {
+    private List<Node> allValidMoves() {
         ArrayList<Node> out = new ArrayList<Node>();
         for (int dx = -1; dx < 2; dx++) {
             for (int dy = -1; dy < 2; dy++) {
@@ -136,7 +120,7 @@ public class Puzzle {
     }
 
 
-    public boolean isValidMove(Node p) {
+    private boolean isValidMove(Node p) {
         if ((p.x < 0) || (p.x >= DIMS)) {
             return false;
         }
@@ -145,39 +129,33 @@ public class Puzzle {
         }
         int dx = blank.x - p.x;
         int dy = blank.y - p.y;
-        if ((Math.abs(dx) + Math.abs(dy) != 1) || (dx * dy != 0)) {
-            return false;
-        }
-        return true;
+        return (Math.abs(dx) + Math.abs(dy) == 1) && (dx * dy == 0);
     }
 
 
-    public void move(Node p) {
+    private void move(Node p) {
         if (!isValidMove(p)) {
             throw new RuntimeException("Invalid move");
         }
-        assert tiles[blank.x][blank.y] == 0;
-        tiles[blank.x][blank.y] = tiles[p.x][p.y];
-        tiles[p.x][p.y] = 0;
+        assert state[blank.x][blank.y] == 0;
+        state[blank.x][blank.y] = state[p.x][p.y];
+        state[p.x][p.y] = 0;
         blank = p;
     }
 
 
     /**
      * returns a new puzzle with the move applied
-     *
-     * @param p
-     * @return
      */
-    public Puzzle moveClone(Node p) {
+    private Puzzle moveClone(Node p) {
         Puzzle out = new Puzzle(this);
         out.move(p);
         return out;
     }
 
 
-    public void shuffle(int howmany) {
-        for (int i = 0; i < howmany; i++) {
+    public void shuffle(int howMany) {
+        for (int i = 0; i < howMany; i++) {
             List<Node> possible = allValidMoves();
             int which = (int) (Math.random() * possible.size());
             Node move = possible.get(which);
@@ -185,17 +163,16 @@ public class Puzzle {
         }
     }
 
-
-    public void shuffle() {
-        shuffle(DIMS * DIMS * DIMS * DIMS * DIMS);
+    private Puzzle getSOLVED() {
+        return new Puzzle();
     }
 
-
-    public int numberMisplacedTiles() {
+    private int numberMisplacedTiles() {
+        Puzzle solved = getSOLVED();
         int wrong = 0;
         for (int i = 0; i < DIMS; i++) {
             for (int j = 0; j < DIMS; j++) {
-                if ((tiles[i][j] > 0) && (tiles[i][j] != SOLVED.tiles[i][j])) {
+                if ((state[i][j] > 0) && (state[i][j] != solved.state[i][j])) {
                     wrong++;
                 }
             }
@@ -204,43 +181,19 @@ public class Puzzle {
     }
 
 
-    public boolean isSolved() {
+    private boolean isSolved() {
         return numberMisplacedTiles() == 0;
-    }
-
-
-    /**
-     * another A* heuristic.
-     * Total manhattan distance (L1 norm) from each non-blank tile to its correct position
-     *
-     * @return
-     */
-    public int manhattanDistance() {
-        int sum = 0;
-        for (Node p : allTilePos()) {
-            int val = tile(p);
-            if (val > 0) {
-                Node correct = SOLVED.whereIs(val);
-                sum += Math.abs(correct.x = p.x);
-                sum += Math.abs(correct.y = p.y);
-            }
-        }
-        return sum;
     }
 
     /**
      * distance heuristic for A*
-     *
-     * @return
      */
-    public int estimateError() {
+    private int estimateError() {
         return this.numberMisplacedTiles();
-        //return 5*this.numberMisplacedTiles(); // finds a non-optimal solution faster
-        //return this.manhattanDistance();
     }
 
 
-    public List<Puzzle> allAdjacentPuzzles() {
+    private List<Puzzle> allAdjacentPuzzles() {
         ArrayList<Puzzle> out = new ArrayList<Puzzle>();
         for (Node move : allValidMoves()) {
             out.add(moveClone(move));
@@ -250,58 +203,19 @@ public class Puzzle {
 
     /**
      * returns a list of boards if it was able to solve it, or else null
-     *
-     * @return
      */
-    public List<Puzzle> dijkstraSolve() {
-        Queue<Puzzle> toVisit = new LinkedList<Puzzle>();
-        HashMap<Puzzle, Puzzle> predecessor = new HashMap<Puzzle, Puzzle>();
-        toVisit.add(this);
-        predecessor.put(this, null);
-        int cnt = 0;
-        while (toVisit.size() > 0) {
-            Puzzle candidate = toVisit.remove();
-            cnt++;
-            if (cnt % 10000 == 0) {
-                System.out.printf("Considered %,d positions. Queue = %,d\n", cnt, toVisit.size());
-            }
-            if (candidate.isSolved()) {
-                System.out.printf("Solution considered %d boards\n", cnt);
-                LinkedList<Puzzle> solution = new LinkedList<Puzzle>();
-                Puzzle backtrace = candidate;
-                while (backtrace != null) {
-                    solution.addFirst(backtrace);
-                    backtrace = predecessor.get(backtrace);
-                }
-                return solution;
-            }
-            for (Puzzle fp : candidate.allAdjacentPuzzles()) {
-                if (!predecessor.containsKey(fp)) {
-                    predecessor.put(fp, candidate);
-                    toVisit.add(fp);
-                }
-            }
-        }
-        return null;
-    }
-
-
-    /**
-     * returns a list of boards if it was able to solve it, or else null
-     */
-    public List<Puzzle> aStarSolve() {
-        HashMap<Puzzle, Puzzle> predecessor = new HashMap<Puzzle, Puzzle>();
-        HashMap<Puzzle, Integer> depth = new HashMap<Puzzle, Integer>();
-        final HashMap<Puzzle, Integer> score = new HashMap<Puzzle, Integer>();
-        Comparator<Puzzle> comparator = new Comparator<Puzzle>() {
+    public List<Puzzle> aStarSolver() {
+        Map<Puzzle, Puzzle> parent = new HashMap<Puzzle, Puzzle>();
+        Map<Puzzle, Integer> depth = new HashMap<Puzzle, Integer>();
+        Map<Puzzle, Integer> score = new HashMap<Puzzle, Integer>();
+        Comparator<Puzzle> comparator = new Comparator<>() {
             @Override
             public int compare(Puzzle a, Puzzle b) {
                 return score.get(a) - score.get(b);
             }
         };
-        PriorityQueue<Puzzle> toVisit = new PriorityQueue<Puzzle>(10000, comparator);
-
-        predecessor.put(this, null);
+        Queue<Puzzle> toVisit = new PriorityQueue<Puzzle>(10000, comparator);
+        parent.put(this, null);
         depth.put(this, 0);
         score.put(this, this.estimateError());
         toVisit.add(this);
@@ -309,22 +223,25 @@ public class Puzzle {
         while (toVisit.size() > 0) {
             Puzzle candidate = toVisit.remove();
             cnt++;
-            if (cnt % 10000 == 0) {
-                System.out.printf("Considered %,d positions. Queue = %,d\n", cnt, toVisit.size());
+            if (cnt % 10000 == 0)
+                System.out.printf("Solution tree has %d nodes. PriorityQueue size is: %d\n", cnt, toVisit.size());
+            if (cnt > 2900000) {
+                System.out.println("Unsolvable!\n");
+                break;
             }
             if (candidate.isSolved()) {
-                System.out.printf("Solution considered %d boards\n", cnt);
+                System.out.printf("Solution tree has %d nodes.\n", cnt);
                 LinkedList<Puzzle> solution = new LinkedList<Puzzle>();
                 Puzzle backtrace = candidate;
                 while (backtrace != null) {
                     solution.addFirst(backtrace);
-                    backtrace = predecessor.get(backtrace);
+                    backtrace = parent.get(backtrace);
                 }
                 return solution;
             }
             for (Puzzle fp : candidate.allAdjacentPuzzles()) {
-                if (!predecessor.containsKey(fp)) {
-                    predecessor.put(fp, candidate);
+                if (!parent.containsKey(fp)) {
+                    parent.put(fp, candidate);
                     depth.put(fp, depth.get(candidate) + 1);
                     int estimate = fp.estimateError();
                     score.put(fp, depth.get(candidate) + 1 + estimate);
