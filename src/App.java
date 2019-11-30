@@ -31,6 +31,7 @@ public class App {
             double allocatedMem = afterUsedMem - beforeUsedMem;
             System.out.println("Time allocated: " + (allocatedTime / 1000.0) + " seconds");
             System.out.println("Memory allocated: " + (allocatedMem / (1024.0 * 1024.0)) + " MB");
+            return;
         }
         if (ans == '2') {
             double beforeUsedMem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
@@ -55,7 +56,7 @@ public class App {
 
     private static void showSolution(List<Puzzle> solution) {
         if (solution != null) {
-            System.out.printf("\nPuzzle solved with %d moves:\n", solution.size());
+            System.out.println("\nPuzzle solved with " + solution.size() + " moves.\n");
             for (Puzzle sp : solution)
                 sp.show();
         }
