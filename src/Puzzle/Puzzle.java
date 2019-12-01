@@ -50,7 +50,7 @@ public class Puzzle {
     private Puzzle(Puzzle toBeCloned) {
         this();
         for (Node p : allNodePos()) {
-            this.state[p.x][p.y] = toBeCloned.node(p);
+            this.state[p.x][p.y] = toBeCloned.nodeVal(p);
         }
         this.blank = toBeCloned.getBlank();
     }
@@ -62,7 +62,7 @@ public class Puzzle {
      * @param p Node p
      * @return Returns value of each node
      */
-    private int node(Node p) {
+    private int nodeVal(Node p) {
         return this.state[p.x][p.y];
     }
 
@@ -88,9 +88,9 @@ public class Puzzle {
 
 
     /**
-     * Calculates fScore of each node
+     * A heuristic algorithm uses MissedPlaceTiles heuristic method
      *
-     * @return Returns fScore of each node
+     * @return Returns hScore of state to the final state
      */
     private int numberMisplacedNodes() {
         Puzzle solved = getSOLVED();
@@ -107,22 +107,58 @@ public class Puzzle {
 
 
     /**
+     * Returns Node of given node value
+     *
+     * @param nodeValue Given node value
+     * @return Returns Node of given node value
+     */
+    private Node whereIs(int nodeValue) {
+        for (Node n : allNodePos()) {
+            if (nodeVal(n) == nodeValue) {
+                return n;
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * A heuristic algorithm uses manhattan heuristic method
+     *
+     * @return Returns hScore of state to the final state
+     */
+    private int manhattanDistance() {
+        int sum = 0;
+        for (Node n : allNodePos()) {
+            int val = nodeVal(n);
+            if (val != 0) {
+                Node correct = getSOLVED().whereIs(val);
+                assert correct != null;
+                sum += Math.abs(n.x - correct.x) + Math.abs(n.y - correct.y);
+            }
+        }
+        return sum;
+    }
+
+
+    /**
      * Checks if current puzzle is solved
      *
      * @return Returns true if puzzle is solved, false otherwise
      */
     private boolean isSolved() {
-        return this.numberMisplacedNodes() == 0;
+        return this.manhattanDistance() == 0;
     }
 
 
     /**
-     * Calculates fScore of each node
+     * A heuristic algorithm for A*
      *
-     * @return Returns fScore of each node
+     * @return Returns hScore of state to the final state
      */
+
     private int estimateError() {
-        return this.numberMisplacedNodes();
+        return this.manhattanDistance();
     }
 
 
@@ -231,6 +267,7 @@ public class Puzzle {
         }
     }
 
+    
 //    private int getInvCount() {
 //        List<Integer> stateList = new ArrayList<>();
 //        for (int i = 0; i < DIMENSION; i++) {
@@ -358,51 +395,6 @@ public class Puzzle {
                         depth.put(puzzle, depth.get(currentNode) + 1);
                         int estimate = puzzle.estimateError();
                         fScore.put(puzzle, depth.get(currentNode) + 1 + estimate);
-                        openList.add(puzzle);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.getStackTrace();
-        }
-        return null;
-    }
-
-
-    /**
-     * Dijkstra algorithm try to solve the puzzle and returns a list of puzzles if it was able to solve it, null otherwise
-     *
-     * @return Returns a list of puzzles if it was able to solve it, null otherwise
-     */
-    public List<Puzzle> dijkstraSolver() {
-        Queue<Puzzle> openList = new LinkedList<>();
-        HashMap<Puzzle, Puzzle> parent = new HashMap<>();
-        openList.add(this);
-        parent.put(this, null);
-        int count = 0;
-        try {
-            while (!openList.isEmpty()) {
-                Puzzle currentNode = openList.remove();
-                count++;
-                if (count % 10000 == 0)
-                    System.out.println(count + "states assumed. PriorityQueue size is: " + openList.size());
-                if (count > 3000000) {
-                    System.out.println("Unsolvable!\n");
-                    break;
-                }
-                if (currentNode.isSolved()) {
-                    System.out.println("\n" + count + " states assumed.");
-                    LinkedList<Puzzle> solution = new LinkedList<>();
-                    Puzzle backtrace = currentNode;
-                    while (backtrace != null) {
-                        solution.addFirst(backtrace);
-                        backtrace = parent.get(backtrace);
-                    }
-                    return solution;
-                }
-                for (Puzzle puzzle : currentNode.allAdjacentNodes()) {
-                    if (!parent.containsKey(puzzle)) {
-                        parent.put(puzzle, currentNode);
                         openList.add(puzzle);
                     }
                 }
