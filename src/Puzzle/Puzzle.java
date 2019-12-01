@@ -147,7 +147,7 @@ public class Puzzle {
      * @return Returns true if puzzle is solved, false otherwise
      */
     private boolean isSolved() {
-        return this.manhattanDistance() == 0;
+        return this.numberMisplacedNodes() == 0;
     }
 
 
@@ -267,7 +267,7 @@ public class Puzzle {
         }
     }
 
-    
+
 //    private int getInvCount() {
 //        List<Integer> stateList = new ArrayList<>();
 //        for (int i = 0; i < DIMENSION; i++) {
