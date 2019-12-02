@@ -248,9 +248,9 @@ public class Puzzle {
      *
      * @return Returns a new puzzle with the applied movement
      */
-    private Puzzle movedClone(Node p) {
+    private Puzzle movedClone(Node node) {
         Puzzle out = new Puzzle(this);
-        out.move(p);
+        out.move(node);
         return out;
     }
 
@@ -354,8 +354,8 @@ public class Puzzle {
                     }
                 }
             }
-        } catch (Exception e) {
-            e.getStackTrace();
+        } catch (Exception ignored) {
+            System.err.println("Opps!");
         }
         return null;
     }
