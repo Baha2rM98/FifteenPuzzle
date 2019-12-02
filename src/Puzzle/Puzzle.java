@@ -298,11 +298,6 @@ public class Puzzle {
      * Gets user input as initiation state
      */
     public void getUserInput() {
-        for (int i = 0; i < DIMENSION; i++) {
-            for (int j = 0; j < DIMENSION; j++) {
-                this.state[i][j] = -1;
-            }
-        }
         Scanner scn = new Scanner(System.in);
         for (int i = 0; i < DIMENSION; i++) {
             for (int j = 0; j < DIMENSION; j++) {
