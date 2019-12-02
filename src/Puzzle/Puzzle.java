@@ -88,25 +88,6 @@ public class Puzzle {
 
 
     /**
-     * A heuristic algorithm uses MissedPlaceTiles heuristic method
-     *
-     * @return Returns hScore of state to the final state
-     */
-    private int numberMisplacedNodes() {
-        Puzzle solved = getSOLVED();
-        int wrong = 0;
-        for (int i = 0; i < DIMENSION; i++) {
-            for (int j = 0; j < DIMENSION; j++) {
-                if ((this.state[i][j] > 0) && (this.state[i][j] != solved.state[i][j])) {
-                    wrong++;
-                }
-            }
-        }
-        return wrong;
-    }
-
-
-    /**
      * Returns Node of given node value
      *
      * @param nodeValue Given node value
