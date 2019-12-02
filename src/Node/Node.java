@@ -6,8 +6,13 @@ package Node;
  **/
 
 public class Node {
+
+    // X coordination
     public int x;
+
+    // Y coordination
     public int y;
+
 
     /**
      * Constructor
@@ -20,6 +25,7 @@ public class Node {
         this.y = y;
     }
 
+
     /**
      * Returns position of X
      *
@@ -28,6 +34,7 @@ public class Node {
     public int getX() {
         return x;
     }
+
 
     /**
      * Returns position of Y
